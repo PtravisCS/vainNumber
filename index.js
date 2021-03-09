@@ -1,3 +1,6 @@
+const fs = require('fs');
+const papa = require('papaparse');
+
 exports.handler = async (event) => {
     
     let str_response_body = "";
@@ -34,6 +37,39 @@ exports.handler = async (event) => {
     
     return response;
 };
+
+function readFile() {
+
+    const file = fs.createReadStream('words_shorter_than_11_sorted.csv'); 
+    let dictionary_words = [];
+
+    try {
+        papa.parse(file, {
+        
+            header: true,
+            worker: false,
+            step: function(results, parser) {
+                
+                dictionary_words.push(results.data);
+
+            },
+            complete: function(results, file) {
+
+                return dictionary_words;
+
+            }
+            
+        });
+
+    } catch (ex) {
+
+        
+
+    } finally {
+
+
+    }
+}
 
 /**
  * Name:            stripNumber
