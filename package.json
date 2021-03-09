@@ -1,0 +1,19 @@
+{
+  "name": "convert_to_vanity_number",
+  "version": "1.0.0",
+  "description": "AWS Lambda function to convert a phone number from an AWS Connect phone call into a series of vanity numbers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PtravisCS/vainNumber.git"
+  },
+  "author": "Paul Travis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PtravisCS/vainNumber/issues"
+  },
+  "homepage": "https://github.com/PtravisCS/vainNumber#readme"
+}
