@@ -12,10 +12,24 @@ exports.handler = async (event) => {
            
            let str_number = stripNumber(event.Details.ContactData.CustomerEndpoint.Address);
            
-           let str_vanity_numbers = convertToVanity(str_number);
+           let arr_data = readFile();
            
-           str_response_body = str_number;
-           int_response_status = 200;
+           let arr_file = [];
+           
+           if (arr_data.status == "200") {
+               
+               arr_file = arr_data.data;
+               
+            } else {
+                
+                throw "Failed to Read File";
+                
+            }
+           
+            let arr_vanity_words = getVanityWords(str_number, arr_file);
+           
+            str_response_body = arr_vanity_words;
+            int_response_status = 200;
            
        } else {
            
@@ -55,18 +69,21 @@ function readFile() {
             },
             complete: function(results, file) {
 
-                return dictionary_words;
-
+                return { 
+                    data: dictionary_words,
+                    status: 200
+                };
             }
             
         });
 
     } catch (ex) {
 
-        
-
-    } finally {
-
+        return {
+            
+            data: dictionary_words,
+            status: 400
+        };
 
     }
 }
@@ -88,8 +105,25 @@ function stripNumber(number) {
     
 }
 
-function convertToVanity(number) {
+function getVanityWords(str_number, arr_file) {
     
+    var i;
+    var arr_vanity_words;
     
+    for (i = 0; i < arr_file.length; i++) {
+        
+        if (str_number.search(arr_file[i].number) > -1) {
+            
+            arr_vanity_words.push(arr_file[i]);
+            
+        }
+        
+        if (arr_vanity_words.length == 5) {
+            
+            return arr_vanity_words;
+            
+        }
+        
+    }
     
 }
