@@ -52,41 +52,10 @@ exports.handler = async (event) => {
 
 function readFile() {
 
-    const fs = require('fs');
-    const papa = require('papaparse');
+    var json_dictionary = require('./words_shorter_than_11_sorted.json');
+    
+    return json_dictionary;
 
-    const file = fs.createReadStream('words_shorter_than_11_sorted.csv'); 
-    let dictionary_words = [];
-
-    try {
-        papa.parse(file, {
-        
-            header: true,
-            worker: false,
-            step: function(results, parser) {
-                
-                dictionary_words.push(results.data);
-
-            },
-            complete: function(results, file) {
-
-                return { 
-                    data: dictionary_words,
-                    status: 200
-                };
-            }
-            
-        });
-
-    } catch (ex) {
-
-        return {
-            
-            data: dictionary_words,
-            status: 400
-        };
-
-    }
 }
 
 /**
@@ -128,3 +97,4 @@ function getVanityWords(str_number, arr_file) {
     }
     
 }
+
