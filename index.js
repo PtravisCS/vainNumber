@@ -1,5 +1,3 @@
-const fs = require('fs');
-const papa = require('papaparse');
 
 exports.handler = async (event) => {
     
@@ -53,6 +51,9 @@ exports.handler = async (event) => {
 };
 
 function readFile() {
+
+    const fs = require('fs');
+    const papa = require('papaparse');
 
     const file = fs.createReadStream('words_shorter_than_11_sorted.csv'); 
     let dictionary_words = [];
