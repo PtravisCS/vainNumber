@@ -8,26 +8,14 @@ exports.handler = async (event) => {
         
        if (event.Details.ContactData.CustomerEndpoint.Type == "TELEPHONE_NUMBER") {
            
-           let str_number = stripNumber(event.Details.ContactData.CustomerEndpoint.Address);
-           
-           let arr_data = readFile();
-           
-           let arr_file = [];
-           
-           if (arr_data.status == "200") {
-               
-               arr_file = arr_data.data;
-               
-            } else {
-                
-                throw "Failed to Read File";
-                
-            }
-           
-            let arr_vanity_words = getVanityWords(str_number, arr_file);
-           
-            str_response_body = arr_vanity_words;
-            int_response_status = 200;
+          let str_number = stripNumber(event.Details.ContactData.CustomerEndpoint.Address);
+
+          let arr_file = readFile();
+
+          let arr_vanity_words = getVanityWords(str_number, arr_file);
+
+          str_response_body = arr_vanity_words;
+          int_response_status = 200;
            
        } else {
            
@@ -36,7 +24,7 @@ exports.handler = async (event) => {
         
     } catch (ex) {
         
-        str_response_body = ex;
+        str_response_body = ex.message;
         int_response_status = 400;
         
     }
@@ -50,12 +38,20 @@ exports.handler = async (event) => {
     return response;
 };
 
+/**
+ * Name:            readFile
+ * Purpose:         Reads in the dictionary file used to test if the caller's phone number contains words.
+ * Author:          Paul Travis
+ * Created:         3/8/2021
+ * Last Changed:    3/9/2021
+ * Last Changed By: Paul Travis
+ */
 function readFile() {
 
     var json_dictionary = require('./words_shorter_than_11_sorted.json');
     
-    return json_dictionary;
-
+    return json_dictionary
+    
 }
 
 /**
@@ -75,6 +71,15 @@ function stripNumber(number) {
     
 }
 
+
+/**
+ * Name:            getVanityWords
+ * Purpose:         get a list of words that match the given phone number
+ * Author:          Paul Travis
+ * Created:         3/8/2021
+ * Last Changed:    3/10/2021
+ * Last Changed By: Paul Travis
+ */
 function getVanityWords(str_number, arr_file) {
     
     var i;
