@@ -34,7 +34,7 @@ exports.handler = async (event) => {
 
     const response = {
         statusCode: int_response_status,
-        body: JSON.stringify(str_response_body),
+        body: str_response_body,
     };
     
     
@@ -63,7 +63,7 @@ function generateResponse(arr_vanity_numbers) {
     
     for (i = 0; i < arr_vanity_numbers.length; i++) {
 
-      str_response += numToWord(i) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium'>\n";
+      str_response += numToWord(i + 1) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium'>\n";
 
     }
 
