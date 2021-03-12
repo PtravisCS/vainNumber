@@ -34,7 +34,10 @@ exports.handler = async (event) => {
 
     const response = {
         statusCode: int_response_status,
-        body: str_response_body,
+        outputSpeech: {
+          type: "SSML",
+          ssml: str_response_body,
+        }
     };
     
     
@@ -57,13 +60,13 @@ function generateResponse(arr_vanity_numbers) {
   if (arr_vanity_numbers.length > 0) {
 
   
-    str_response = "<speak>\n The following vanity numbers were found for your phone number:\n";
+    str_response = "<speak>The following vanity numbers were found for your phone number: ";
 
     var i;
     
     for (i = 0; i < arr_vanity_numbers.length; i++) {
 
-      str_response += numToWord(i + 1) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium'>\n";
+      str_response += numToWord(i + 1) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium'>";
 
     }
 
@@ -71,7 +74,7 @@ function generateResponse(arr_vanity_numbers) {
 
   } else {
 
-    str_response = "<speak>\n No vanity numbers were found for your phone number.\n</speak>";
+    str_response = "<speak>No vanity numbers were found for your phone number.</speak>";
 
   }
 
