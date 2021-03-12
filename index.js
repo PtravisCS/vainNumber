@@ -8,7 +8,7 @@ exports.handler = async (event) => {
         
        if (event.Details.ContactData.CustomerEndpoint.Type == "TELEPHONE_NUMBER") {
            
-          let str_number = stripNumber(event.Details.ContactData.CustomerEndpoint.Address);
+          let str_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address);
 
           let arr_file = readFile();
 
@@ -16,9 +16,8 @@ exports.handler = async (event) => {
 
           let arr_vanity_numbers = createVanityPhoneNumbers(event.Details.ContactData.CustomerEndpoint.Address, arr_vanity_words);
 
-          
+          str_response_body = generateResponse(arr_vanity_numbers); 
 
-          str_response_body = arr_vanity_numbers;
           int_response_status = 200;
            
        } else {
@@ -162,14 +161,14 @@ function readFile() {
 }
 
 /**
- * Name:            stripNumber
+ * Name:            transformPhoneNumber
  * Purpose:         Clean a phone number of unneded characters such as the + symbol.
  * Author:          Paul Travis
  * Created:         3/6/2021
- * Last changed:    3/8/2021
+ * Last changed:    3/11/2021
  * Last Changed By: Paul Travis
  */
-function stripNumber(number) {
+function transformPhoneNumber(number) {
     
     number = number.replace(/\D/gi, ""); //clear off the plus symbol from the front along with any other gook that we don't want
     number = number.replace(/1|0/gi, " "); //replace 1 and 0 with spaces as they don't have a corresponding value on the numberpad.
