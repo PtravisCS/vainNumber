@@ -78,7 +78,7 @@ function storeVanityNumbers(arr_data_to_write) {
 
     } 
 
-  }
+  });
 
 }
 
