@@ -8,13 +8,18 @@ exports.handler = async (event) => {
         
        if (event.Details.ContactData.CustomerEndpoint.Type == "TELEPHONE_NUMBER") {
            
-          let str_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address);
+          let str_processed_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address);
+          let str_number = event.Details.ContactData.CustomerEndpoint.Address;
 
-          let arr_file = readFile();
+          let arr_file = getDictionary();
 
-          let arr_vanity_words = getVanityWords(str_number, arr_file); 
+          let arr_vanity_words = getVanityWords(str_processed_number, arr_file); 
 
-          let arr_vanity_numbers = createVanityPhoneNumbers(event.Details.ContactData.CustomerEndpoint.Address, arr_vanity_words);
+          let arr_vanity_numbers = createVanityPhoneNumbers(str_number);
+
+          let arr_data_to_write = {"callingNumber": str_number, "vanityNumbers": arr_vanity_numbers}; //create item to be stored in the database
+
+          storeVanityNumbers(arr_data_to_write); //Write caller's number and their vanity numbers to the db
 
           str_response_body = generateResponse(arr_vanity_numbers); 
 
@@ -34,15 +39,48 @@ exports.handler = async (event) => {
 
     const response = {
         statusCode: int_response_status,
-        outputSpeech: {
-          type: "SSML",
-          ssml: str_response_body,
-        }
+        outputSpeech: str_response_body
     };
     
     
     return response;
 };
+
+
+/**
+ * Name:            storeVanityNumbers 
+ * Purpose:         Writes the list of vanity numbers returned by the function to the database 
+ * Author:          Paul Travis
+ * Created:         3/14/2021
+ * Last Changed:    3/14/2021
+ * Last Changed By: Paul Travis
+ */
+function storeVanityNumbers(arr_data_to_write) {
+
+  var AWS = require('aws-sdk');
+
+  AWS.config.update({region: 'us-east-1'});
+
+  var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
+  var params = {
+
+    TableName: 'vanityNumbers',
+    Item: arr_data_to_write
+
+  };
+
+  ddb.putItem(params, function(err, data) {
+
+    if (err) {
+
+      throw err; 
+
+    } 
+
+  }
+
+}
 
 
 /**
@@ -66,7 +104,7 @@ function generateResponse(arr_vanity_numbers) {
     
     for (i = 0; i < arr_vanity_numbers.length; i++) {
 
-      str_response += numToWord(i + 1) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium'>";
+      str_response += numToWord(i + 1) + " Vanity Number: <say-as interpret-as='telephone'>" + arr_vanity_numbers[i] + "</say-as><break strength='medium' />";
 
     }
 
@@ -148,14 +186,14 @@ function createVanityPhoneNumbers(str_number, arr_vanity_words) {
 }
 
 /**
- * Name:            readFile
+ * Name:            getDictionary
  * Purpose:         Reads in the dictionary file used to test if the caller's phone number contains words.
  * Author:          Paul Travis
  * Created:         3/8/2021
- * Last Changed:    3/9/2021
+ * Last Changed:    3/14/2021
  * Last Changed By: Paul Travis
  */
-function readFile() {
+function getDictionary() {
 
     var json_dictionary = require('./words_shorter_than_11_sorted.json');
     
