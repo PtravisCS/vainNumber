@@ -8,20 +8,26 @@ exports.handler = async (event) => {
         
        if (event.Details.ContactData.CustomerEndpoint.Type == "TELEPHONE_NUMBER") {
            
-          let str_processed_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address);
-          let str_number = event.Details.ContactData.CustomerEndpoint.Address;
+         let str_processed_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address); //Caller number stripped of non-numberics, 1, and 0.
+          let str_number = event.Details.ContactData.CustomerEndpoint.Address; //Original caller's number unmodified
 
-          let arr_file = getDictionary();
+          let arr_vanity_numbers = await checkIfPreviouslyCalled(str_number); //read from DB to see if this number has previously called the function. If so just re-use that data.
 
-          let arr_vanity_words = getVanityWords(str_processed_number, arr_file); 
+          if (!arr_vanity_numbers) {
 
-          let arr_vanity_numbers = createVanityPhoneNumbers(str_number);
+            let arr_file = getDictionary();
 
-          let arr_data_to_write = {"callingNumber": str_number, "vanityNumbers": arr_vanity_numbers}; //create item to be stored in the database
+            let arr_vanity_words = getVanityWords(str_processed_number, arr_file);
 
-          storeVanityNumbers(arr_data_to_write); //Write caller's number and their vanity numbers to the db
+            arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
 
-          str_response_body = generateResponse(arr_vanity_numbers); 
+            let arr_data_to_write = {"callingNumber": str_number, "vanityNumbers": arr_vanity_numbers}; //create item to be stored in the database
+
+            await storeVanityNumbers(arr_data_to_write); //Write caller's number and their vanity numbers to the db
+
+          }
+
+          str_response_body = generateResponse(arr_vanity_numbers);
 
           int_response_status = 200;
            
@@ -46,22 +52,40 @@ exports.handler = async (event) => {
     return response;
 };
 
+/**
+ * Name:            checkIfPreviouslyCalled 
+ * Purpose:         Checks the database to see if a number has previously called and if so returns the related entry
+ * Author:          Paul Travis
+ * Created:         3/16/2021
+ * Last Changed:    3/16/2021
+ * Last Changed By: Paul Travis
+ */
+async function checkIfPreviouslyCalled(str_number) {
+  
+  const ddb_Document_Client = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
+  
+  const params = {
+    TableName: 'vanityNumbers',
+    Key: {
+      callingNumber: str_number
+    }
+  };
+  
+  return await ddb_Document_Client.get(params).promise();
+  
+}
 
 /**
  * Name:            storeVanityNumbers 
  * Purpose:         Writes the list of vanity numbers returned by the function to the database 
  * Author:          Paul Travis
  * Created:         3/14/2021
- * Last Changed:    3/14/2021
+ * Last Changed:    3/16/2021
  * Last Changed By: Paul Travis
  */
-function storeVanityNumbers(arr_data_to_write) {
-
-  var AWS = require('aws-sdk');
-
-  AWS.config.update({region: 'us-east-1'});
-
-  var ddb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+async function storeVanityNumbers(arr_data_to_write) {
+  
+  const ddb_Document_Client = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 
   var params = {
 
@@ -69,19 +93,12 @@ function storeVanityNumbers(arr_data_to_write) {
     Item: arr_data_to_write
 
   };
+  
+  console.log(params);
 
-  ddb.putItem(params, function(err, data) {
-
-    if (err) {
-
-      throw err; 
-
-    } 
-
-  });
+  await ddb_Document_Client.put(params).promise();
 
 }
-
 
 /**
  * Name:            generateResponse 
