@@ -5,4 +5,4 @@ component: aws-lambda
 
 inputs:
   src: ./*
-  handler: handler.handler
+  handler: index.handler
