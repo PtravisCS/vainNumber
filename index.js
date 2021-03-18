@@ -67,7 +67,7 @@ function produceVanityNumbers(str_processed_number, str_number) {
 
   let arr_vanity_words = getVanityWords(str_processed_number, arr_file);
 
-  arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
+  const arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
 
   return arr_vanity_numbers;
 
