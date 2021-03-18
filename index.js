@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 
-exports.handler = async (event) => {
+module.exports.handler = async (event) => {
    
     const INT_SUCCESS_CODE = 200;
     const INT_DEFAULT_FAILURE_CODE = 400;
