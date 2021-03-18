@@ -116,7 +116,7 @@ async function checkIfPreviouslyCalled(str_number) {
 
     return ARR_RETURNED_ITEM.Item.vanityNumbers;
 
-  else {
+  } else {
 
     return;
 
