@@ -1,8 +1,0 @@
-org: ptraviscs
-app: vainnumber
-name: aws-lambda-starter
-component: aws-lambda
-
-inputs:
-  src: ./*
-  handler: index.handler
