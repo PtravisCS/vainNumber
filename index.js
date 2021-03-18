@@ -43,7 +43,7 @@ exports.handler = async (event) => {
         
     }
     
-    return generateResponse(int_response_status, str_response_body);
+    return generateFinalResponse(int_response_status, str_response_body);
 };
 
 /**
@@ -54,7 +54,7 @@ exports.handler = async (event) => {
  * Last Changed:    3/18/2021
  * Last Changed By: Paul Travis
  */
-function generateResponse(int_response_status, str_response_body) {
+function generateFinalResponse(int_response_status, str_response_body) {
 
     return {
         statusCode: int_response_status,
