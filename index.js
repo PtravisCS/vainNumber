@@ -25,8 +25,6 @@ exports.handler = async (event) => {
 
           }
 
-          console.log(arr_vanity_numbers);
-
           str_response_body = generateResponse(arr_vanity_numbers);
 
           int_response_status = INT_SUCCESS_CODE;
@@ -106,21 +104,22 @@ async function checkIfPreviouslyCalled(str_number) {
 
     const ARR_RETURNED_ITEM = await DDB_DOCUMENT_CLIENT.get(PARAMS).promise();
 
+    if (ARR_RETURNED_ITEM.Item.vanityNumbers) {
+
+      return ARR_RETURNED_ITEM.Item.vanityNumbers;
+
+    } else {
+
+      return;
+
+    }
+
   } catch (ex) {
   
     return; //If we return nothing even if there is something it gives the prog. a chance to still generate some valid vanity numbers
 
   }
 
-  if (ARR_RETURNED_ITEM.Item.vanityNumbers) {
-
-    return ARR_RETURNED_ITEM.Item.vanityNumbers;
-
-  } else {
-
-    return;
-
-  }
   
 }
 
@@ -145,8 +144,6 @@ async function storeVanityNumbers(str_number, arr_vanity_numbers) {
 
   };
   
-  console.log(PARAMS);
-
   await DDB_DOCUMENT_CLIENT.put(PARAMS).promise();
 
 }
