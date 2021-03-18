@@ -15,8 +15,5 @@
   "bugs": {
     "url": "https://github.com/PtravisCS/vainNumber/issues"
   },
-  "homepage": "https://github.com/PtravisCS/vainNumber#readme",
-  "dependencies": {
-    "papaparse": "^5.3.0"
-  }
+  "homepage": "https://github.com/PtravisCS/vainNumber#readme"
 }
