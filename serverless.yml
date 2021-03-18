@@ -1,8 +1,16 @@
-org: ptraviscs
-app: vainnumber
-name: aws-lambda-starter
-component: aws-lambda
+service: vainNumber
 
-inputs:
-  src: ./*
-  handler: index.handler
+provider:
+  name: "aws"
+  runtime: "nodejs14.x"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+      Resource: "arn:aws:dynamodb:us-east-1:279007140901:table/vanityNumbers"
+
+functions:
+  vainNumber:
+    handler: index.handler
