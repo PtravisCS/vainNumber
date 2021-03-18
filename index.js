@@ -1,36 +1,33 @@
 const AWS = require('aws-sdk');
 
 exports.handler = async (event) => {
-    
+   
+    const int_success_code = 200;
+    const int_default_failure_code = 400;
+
     let str_response_body = "";
-    let int_response_status = 418;
+    let int_response_status = 418; //If we recieve this error as a return value something has gone horribly wrong.
    
     try {
         
        if (event.Details.ContactData.CustomerEndpoint.Type == "TELEPHONE_NUMBER") {
            
-         let str_processed_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address); //Caller number stripped of non-numberics, 1, and 0.
-          let str_number = event.Details.ContactData.CustomerEndpoint.Address; //Original caller's number unmodified
+          const str_processed_number = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address); //Caller number stripped of non-numberics, 1, and 0.
+          const str_number = event.Details.ContactData.CustomerEndpoint.Address; //Original caller's number unmodified
 
           let arr_vanity_numbers = await checkIfPreviouslyCalled(str_number); //read from DB to see if this number has previously called the function. If so just re-use that data.
 
-          if (!arr_vanity_numbers) {
-
-            let arr_file = getDictionary();
-
-            let arr_vanity_words = getVanityWords(str_processed_number, arr_file);
-
-            arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
-
-            let arr_data_to_write = {"callingNumber": str_number, "vanityNumbers": arr_vanity_numbers}; //create item to be stored in the database
-
-            await storeVanityNumbers(arr_data_to_write); //Write caller's number and their vanity numbers to the db
+          if (!arr_vanity_numbers) { //If the DB doesn't return any entries for the calling number generate a fresh set of vanity numbers and store them in the DB.
+            
+            arr_vanity_numbers = produceAndStoreVanityNumbers(str_processed_number, str_number);
 
           }
 
+          console.log(arr_vanity_numbers);
+
           str_response_body = generateResponse(arr_vanity_numbers);
 
-          int_response_status = 200;
+          int_response_status = int_success_code;
            
        } else {
            
@@ -40,7 +37,7 @@ exports.handler = async (event) => {
     } catch (ex) {
         
         str_response_body = {"error name": ex.name, "error": ex.message, "line": ex.lineNumber};
-        int_response_status = 400;
+        int_response_status = int_default_failure_code;
         
     }
 
@@ -52,6 +49,29 @@ exports.handler = async (event) => {
     
     return response;
 };
+
+
+/**
+ * Name:            produceAndStoreVanityNumbers
+ * Purpose:         Handles producing a list of vanity numbers, storing them to a datastore, and returns the list of vanity numbers to the caller 
+ * Author:          Paul Travis
+ * Created:         3/17/2021
+ * Last Changed:    3/17/2021
+ * Last Changed By: Paul Travis
+ */
+function produceAndStoreVanityNumbers(str_processed_number, str_number) {
+
+  const arr_file = getDictionary();
+
+  let arr_vanity_words = getVanityWords(str_processed_number, arr_file);
+
+  arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
+
+  await storeVanityNumbers(str_number, arr_vanity_numbers); //Write caller's number and their vanity numbers to the db
+
+  return arr_vanity_numbers;
+
+}
 
 /**
  * Name:            checkIfPreviouslyCalled 
@@ -72,7 +92,9 @@ async function checkIfPreviouslyCalled(str_number) {
     }
   };
   
-  return await ddb_Document_Client.get(params).promise();
+  const arr_returned_item = await ddb_Document_Client.get(params).promise();
+
+  return arr_returned_item.Item.vanityNumbers;
   
 }
 
@@ -81,14 +103,16 @@ async function checkIfPreviouslyCalled(str_number) {
  * Purpose:         Writes the list of vanity numbers returned by the function to the database 
  * Author:          Paul Travis
  * Created:         3/14/2021
- * Last Changed:    3/16/2021
+ * Last Changed:    3/17/2021
  * Last Changed By: Paul Travis
  */
-async function storeVanityNumbers(arr_data_to_write) {
+async function storeVanityNumbers(str_number, arr_vanity_numbers) {
   
+  const arr_data_to_write = {"callingNumber": str_number, "vanityNumbers": arr_vanity_numbers}; //create item to be stored in the database
+
   const ddb_Document_Client = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'});
 
-  var params = {
+  const params = {
 
     TableName: 'vanityNumbers',
     Item: arr_data_to_write
@@ -172,7 +196,7 @@ function numToWord(int_num) {
       break;
 
     default:
-      throw "Invalid Number";
+      throw new Error("Invalid Number");
 
   }
 
@@ -213,7 +237,7 @@ function createVanityPhoneNumbers(str_number, arr_vanity_words) {
  */
 function getDictionary() {
 
-    var json_dictionary = require('./words_shorter_than_11_sorted.json');
+    const json_dictionary = require('./words_shorter_than_11_sorted.json');
     
     return json_dictionary
     
@@ -268,6 +292,8 @@ function getVanityWords(str_number, arr_file) {
         
         
     }
+
+    return arr_vanity_words; //If there is less than 5 total vanity words available for the given phone number
     
 }
 
