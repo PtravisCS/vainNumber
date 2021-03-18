@@ -102,9 +102,25 @@ async function checkIfPreviouslyCalled(str_number) {
     }
   };
   
-  const ARR_RETURNED_ITEM = await DDB_DOCUMENT_CLIENT.get(PARAMS).promise();
+  try {
 
-  return ARR_RETURNED_ITEM.Item.vanityNumbers;
+    const ARR_RETURNED_ITEM = await DDB_DOCUMENT_CLIENT.get(PARAMS).promise();
+
+  } catch (ex) {
+  
+    return; //If we return nothing even if there is something it gives the prog. a chance to still generate some valid vanity numbers
+
+  }
+
+  if (ARR_RETURNED_ITEM.Item.vanityNumbers) {
+
+    return ARR_RETURNED_ITEM.Item.vanityNumbers;
+
+  else {
+
+    return;
+
+  }
   
 }
 
