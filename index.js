@@ -15,7 +15,7 @@ exports.handler = async (event) => {
           const STR_PROCESSED_NUMBER = transformPhoneNumber(event.Details.ContactData.CustomerEndpoint.Address); //Caller number stripped of non-numberics, 1, and 0.
           const STR_NUMBER = event.Details.ContactData.CustomerEndpoint.Address; //Original caller's number unmodified
 
-          let arr_vanity_numbers = await checkIfPreviouslyCalled(str_number); //read from DB to see if this number has previously called the function. If so just re-use that data.
+          let arr_vanity_numbers = await checkIfPreviouslyCalled(STR_NUMBER); //read from DB to see if this number has previously called the function. If so just re-use that data.
 
           if (!arr_vanity_numbers) { //If the DB doesn't return any entries for the calling number generate a fresh set of vanity numbers and store them in the DB.
             
@@ -29,7 +29,7 @@ exports.handler = async (event) => {
 
           str_response_body = generateResponse(arr_vanity_numbers);
 
-          int_response_status = int_success_code;
+          int_response_status = INT_SUCCESS_CODE;
            
        } else {
            
@@ -39,7 +39,7 @@ exports.handler = async (event) => {
     } catch (ex) {
         
         str_response_body = {"error name": ex.name, "error": ex.message, "line": ex.lineNumber};
-        int_response_status = int_default_failure_code;
+        int_response_status = INT_DEFAULT_FAILURE_CODE;
         
     }
     
@@ -77,7 +77,7 @@ function produceVanityNumbers(str_processed_number, str_number) {
 
   let arr_vanity_words = getVanityWords(str_processed_number, ARR_FILE);
 
-  const ARR_VANITY_NUMBERS = createVanityPhoneNumbers(str_number, ARR_VANITY_WORDS);
+  const ARR_VANITY_NUMBERS = createVanityPhoneNumbers(str_number, arr_vanity_words);
 
   return ARR_VANITY_NUMBERS;
 
@@ -125,7 +125,7 @@ async function storeVanityNumbers(str_number, arr_vanity_numbers) {
   const PARAMS = {
 
     TableName: 'vanityNumbers',
-    Item: arr_data_to_write
+    Item: ARR_DATA_TO_WRITE
 
   };
   
