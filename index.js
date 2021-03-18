@@ -19,7 +19,9 @@ exports.handler = async (event) => {
 
           if (!arr_vanity_numbers) { //If the DB doesn't return any entries for the calling number generate a fresh set of vanity numbers and store them in the DB.
             
-            arr_vanity_numbers = produceAndStoreVanityNumbers(str_processed_number, str_number);
+            arr_vanity_numbers = produceVanityNumbers(str_processed_number, str_number);
+
+            await storeVanityNumbers(str_number, arr_vanity_numbers); //Write caller's number and their vanity numbers to the db
 
           }
 
@@ -52,22 +54,20 @@ exports.handler = async (event) => {
 
 
 /**
- * Name:            produceAndStoreVanityNumbers
- * Purpose:         Handles producing a list of vanity numbers, storing them to a datastore, and returns the list of vanity numbers to the caller 
+ * Name:            produceVanityNumbers
+ * Purpose:         Handles producing a list of vanity numbers and returns the list of vanity numbers to the caller 
  * Author:          Paul Travis
  * Created:         3/17/2021
  * Last Changed:    3/17/2021
  * Last Changed By: Paul Travis
  */
-function produceAndStoreVanityNumbers(str_processed_number, str_number) {
+function produceVanityNumbers(str_processed_number, str_number) {
 
   const arr_file = getDictionary();
 
   let arr_vanity_words = getVanityWords(str_processed_number, arr_file);
 
   arr_vanity_numbers = createVanityPhoneNumbers(str_number, arr_vanity_words);
-
-  await storeVanityNumbers(str_number, arr_vanity_numbers); //Write caller's number and their vanity numbers to the db
 
   return arr_vanity_numbers;
 
